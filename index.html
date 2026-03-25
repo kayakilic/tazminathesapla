@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kıdem ve İhbar Tazminatı Hesaplayıcı</title>
+  <link rel="stylesheet" href="style.css" />
+  <!-- jsPDF: PDF oluşturmak için -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- BAŞLIK -->
+    <header class="header">
+      <div class="header-icon">⚖️</div>
+      <h1>Kıdem &amp; İhbar Tazminatı<br>Hesaplayıcı</h1>
+      <p class="header-sub">Türk İş Hukuku'na göre güncel tavan değerleriyle hesaplama yapın</p>
+    </header>
+
+    <!-- GİRİŞ FORMU -->
+    <section class="card form-card">
+      <h2 class="card-title">📋 Bilgileri Girin</h2>
+
+      <div class="form-group">
+        <label for="startDate">İşe Giriş Tarihi</label>
+        <input type="date" id="startDate" />
+      </div>
+
+      <div class="form-group">
+        <label for="endDate">İşten Çıkış Tarihi</label>
+        <input type="date" id="endDate" />
+      </div>
+
+      <div class="form-group">
+        <label for="salary">Aylık Brüt Ücret (TL)</label>
+        <input type="number" id="salary" placeholder="Örn: 25000" min="0" step="0.01" />
+      </div>
+
+      <button class="btn-primary" onclick="hesapla()">🔢 Hesapla</button>
+
+      <!-- Hata mesajı -->
+      <div id="errorMsg" class="error-msg" style="display:none;"></div>
+    </section>
+
+    <!-- SONUÇ ALANI -->
+    <section id="resultSection" style="display:none;">
+
+      <!-- Çalışma Süresi -->
+      <div class="card result-card">
+        <h2 class="card-title">📅 Çalışma Süresi</h2>
+        <div class="result-grid">
+          <div class="result-item">
+            <span class="result-label">Süre (Yıl / Ay / Gün)</span>
+            <span class="result-value" id="sureTam"></span>
+          </div>
+          <div class="result-item">
+            <span class="result-label">Toplam Gün Sayısı</span>
+            <span class="result-value" id="toplamGun"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Ücret Bilgileri -->
+      <div class="card result-card">
+        <h2 class="card-title">💰 Ücret Bilgileri</h2>
+        <div class="result-grid">
+          <div class="result-item">
+            <span class="result-label">Uygulanan Kıdem Tavanı</span>
+            <span class="result-value" id="kidemTavan"></span>
+          </div>
+          <div class="result-item">
+            <span class="result-label">Esas Alınan Aylık Ücret</span>
+            <span class="result-value" id="esasAylik"></span>
+          </div>
+          <div class="result-item">
+            <span class="result-label">Esas Alınan Günlük Ücret</span>
+            <span class="result-value" id="esasGunluk"></span>
+          </div>
+          <div class="result-item">
+            <span class="result-label">İhbar Süresi</span>
+            <span class="result-value" id="ihbarSure"></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tavan açıklaması (sadece tavan uygulandığında) -->
+      <div id="tavanAciklama" class="card info-card" style="display:none;">
+        <div class="info-icon">ℹ️</div>
+        <p id="tavanAciklamaText"></p>
+      </div>
+
+      <!-- Kıdem Tazminatı Sonucu -->
+      <div class="card sonuc-card kidem-card">
+        <h2 class="card-title">🏆 Kıdem Tazminatı</h2>
+        <div class="buyuk-tutar" id="kidemTutar"></div>
+        <p class="sonuc-cumle" id="kidemCumle"></p>
+      </div>
+
+      <!-- İhbar Tazminatı Sonucu -->
+      <div class="card sonuc-card ihbar-card">
+        <h2 class="card-title">📣 İhbar Tazminatı</h2>
+        <div class="buyuk-tutar" id="ihbarTutar"></div>
+        <p class="sonuc-cumle" id="ihbarCumle"></p>
+      </div>
+
+      <!-- PDF Butonu -->
+      <button class="btn-pdf" onclick="pdfIndir()">📄 Raporu PDF Olarak İndir</button>
+
+    </section>
+
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
