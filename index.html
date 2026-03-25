@@ -92,10 +92,18 @@
       </div>
 
       <!-- Kıdem Tazminatı Sonucu -->
-      <div class="card sonuc-card kidem-card">
+      <div class="card sonuc-card kidem-card" id="kidemKart">
         <h2 class="card-title">🏆 Kıdem Tazminatı</h2>
-        <div class="buyuk-tutar" id="kidemTutar"></div>
-        <p class="sonuc-cumle" id="kidemCumle"></p>
+        <!-- 1 yıldan az çalışmada yasal uyarı (normalde gizli) -->
+        <div id="kidemYasalUyari" class="yasal-uyari" style="display:none;">
+          <div class="uyari-icon">⚖️</div>
+          <p id="kidemYasalUyariText"></p>
+        </div>
+        <!-- Normal sonuç (1 yıl ve üzeri çalışmada gösterilir) -->
+        <div id="kidemSonucAlani">
+          <div class="buyuk-tutar" id="kidemTutar"></div>
+          <p class="sonuc-cumle" id="kidemCumle"></p>
+        </div>
       </div>
 
       <!-- İhbar Tazminatı Sonucu -->

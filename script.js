@@ -124,6 +124,10 @@ function hesapla() {
   const toplamGun = gunFarki(girisTarihi, cikisTarihi);
   const { yil, ay, gun } = gunuParca(toplamGun);
 
+  // 1475 sayılı İş Kanunu md.14: 1 yıldan az çalışmada kıdem tazminatı doğmaz.
+  // 365 gün tam bir yılı temsil eder; 365 günden az ise kıdem hesaplanmaz.
+  const kidemHakkazinandiMi = toplamGun >= 365;
+
   // --- Kıdem tazminatı tavanı ---
   const kTavan = kidemTavanBul(cikisTarihi);
   if (kTavan === null) {
@@ -134,13 +138,17 @@ function hesapla() {
   }
 
   // Tavan kontrolü: brüt ücret tavanı aşıyorsa tavan esas alınır
-  const tavanUygulandiMi = salaryVal > kTavan;
+  // (Kıdem hakkı doğmamışsa bu değerler ekranda "—" olarak gösterilir)
+  const tavanUygulandiMi = kidemHakkazinandiMi && (salaryVal > kTavan);
   const esasAylikUcret   = tavanUygulandiMi ? kTavan : salaryVal;
   const esasGunlukUcret  = esasAylikUcret / 30;
 
   // --- Kıdem tazminatı hesabı ---
   // Formül: günlük ücret × toplam gün × (30/365)
-  const kidemTazminati = esasGunlukUcret * toplamGun * (30 / 365);
+  // Kıdem hakkı yoksa tutar 0 olarak işaretlenir (gösterilmez)
+  const kidemTazminati = kidemHakkazinandiMi
+    ? esasGunlukUcret * toplamGun * (30 / 365)
+    : 0;
 
   // --- İhbar tazminatı hesabı ---
   // İhbar tazminatında tavan uygulanmaz; kullanıcının kendi ücreti esas alınır
@@ -158,9 +166,10 @@ function hesapla() {
   document.getElementById('toplamGun').textContent = `${toplamGun} Gün`;
 
   // Ücret bilgileri
-  document.getElementById('kidemTavan').textContent   = tlFormat(kTavan);
-  document.getElementById('esasAylik').textContent    = tlFormat(esasAylikUcret);
-  document.getElementById('esasGunluk').textContent   = tlFormat(esasGunlukUcret);
+  // Kıdem hakkı yoksa tavan ve esas ücret satırları "—" gösterilir
+  document.getElementById('kidemTavan').textContent   = kidemHakkazinandiMi ? tlFormat(kTavan) : '—';
+  document.getElementById('esasAylik').textContent    = kidemHakkazinandiMi ? tlFormat(esasAylikUcret) : '—';
+  document.getElementById('esasGunluk').textContent   = kidemHakkazinandiMi ? tlFormat(esasGunlukUcret) : '—';
   document.getElementById('ihbarSure').textContent    = `${ihbarGun} Gün`;
 
   // Tavan açıklaması
@@ -175,12 +184,26 @@ function hesapla() {
     tavanDiv.style.display = 'none';
   }
 
-  // Kıdem tazminatı
-  document.getElementById('kidemTutar').textContent = tlFormat(kidemTazminati);
-  document.getElementById('kidemCumle').textContent =
-    `${turkceFormat(girisTarihi)} - ${turkceFormat(cikisTarihi)} tarihleri arasında en son ` +
-    `${tlFormat(salaryVal)} brüt ücret ile çalışan kişinin hak kazandığı kıdem tazminatı ` +
-    `${tlFormat(kidemTazminati)} Türk Lirası'dır.`;
+  // Kıdem tazminatı — 1 yıldan az çalışma kontrolü
+  const kidemYasalUyari  = document.getElementById('kidemYasalUyari');
+  const kidemSonucAlani  = document.getElementById('kidemSonucAlani');
+  if (!kidemHakkazinandiMi) {
+    // Yasal uyarıyı göster, tutar alanını gizle
+    document.getElementById('kidemYasalUyariText').textContent =
+      'Yürürlükteki 1475 sayılı iş kanunu 14. maddesi uyarınca 1 yıldan daha az süreli çalışmalarda ' +
+      'kıdem tazminatına hak kazanılmaz, bu sebeple kıdem tazminatı hesaplanamamıştır.';
+    kidemYasalUyari.style.display = 'flex';
+    kidemSonucAlani.style.display = 'none';
+  } else {
+    // Normal sonucu göster
+    kidemYasalUyari.style.display = 'none';
+    kidemSonucAlani.style.display = 'block';
+    document.getElementById('kidemTutar').textContent = tlFormat(kidemTazminati);
+    document.getElementById('kidemCumle').textContent =
+      `${turkceFormat(girisTarihi)} - ${turkceFormat(cikisTarihi)} tarihleri arasında en son ` +
+      `${tlFormat(salaryVal)} brüt ücret ile çalışan kişinin hak kazandığı kıdem tazminatı ` +
+      `${tlFormat(kidemTazminati)} Türk Lirası'dır.`;
+  }
 
   // İhbar tazminatı
   document.getElementById('ihbarTutar').textContent = tlFormat(ihbarTazminati);
@@ -203,7 +226,7 @@ function hesapla() {
     toplamGun, yil, ay, gun,
     kTavan, esasAylikUcret, esasGunlukUcret,
     kidemTazminati, ihbarGun, ihbarTazminati,
-    tavanUygulandiMi
+    tavanUygulandiMi, kidemHakkazinandiMi
   };
 }
 
@@ -363,12 +386,20 @@ function pdfIndir() {
 
   // Kıdem Tazminatı Sonucu
   bolumBaslik('Kidem Tazminati Sonucu');
-  tutarKutu('Kidem Tazminati', tlFormat(s.kidemTazminati), [232, 245, 233], [39, 174, 96]);
-  const kidemCumle =
-    `${turkceFormat(s.girisTarihi)} - ${turkceFormat(s.cikisTarihi)} tarihleri arasinda ` +
-    `en son ${tlFormat(s.salaryVal)} brut ucret ile calisan kisinin hak kazandigi kidem tazminati ` +
-    `${tlFormat(s.kidemTazminati)} Turk Lirasi'dir.`;
-  kutuyaYaz(kidemCumle, [248, 249, 250]);
+  if (!s.kidemHakkazinandiMi) {
+    // 1 yıldan az çalışma: yasal uyarı metni göster
+    const yasalMetin =
+      'Yururlukteki 1475 sayili is kanunu 14. maddesi uyarinca 1 yildan daha az sureli ' +
+      'calismalarda kidem tazminatina hak kazanilmaz, bu sebeple kidem tazminati hesaplanamamistir.';
+    kutuyaYaz(yasalMetin, [255, 248, 225]);
+  } else {
+    tutarKutu('Kidem Tazminati', tlFormat(s.kidemTazminati), [232, 245, 233], [39, 174, 96]);
+    const kidemCumle =
+      `${turkceFormat(s.girisTarihi)} - ${turkceFormat(s.cikisTarihi)} tarihleri arasinda ` +
+      `en son ${tlFormat(s.salaryVal)} brut ucret ile calisan kisinin hak kazandigi kidem tazminati ` +
+      `${tlFormat(s.kidemTazminati)} Turk Lirasi'dir.`;
+    kutuyaYaz(kidemCumle, [248, 249, 250]);
+  }
 
   y += 4;
 
