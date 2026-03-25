@@ -9,10 +9,10 @@
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+  background: #0F172A;
   min-height: 100vh;
   padding: 20px;
-  color: #1a1a2e;
+  color: #1e293b;
 }
 
 /* ========================================
@@ -28,54 +28,51 @@ body {
    ======================================== */
 .header {
   text-align: center;
-  padding: 40px 20px 30px;
+  padding: 36px 20px 28px;
   color: #fff;
 }
 
 .header-icon {
-  font-size: 3rem;
-  margin-bottom: 12px;
+  display: none;
 }
 
 .header h1 {
-  font-size: 1.9rem;
+  font-size: 1.75rem;
   font-weight: 700;
   line-height: 1.3;
-  margin-bottom: 10px;
-  text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  margin-bottom: 0;
+  letter-spacing: -0.3px;
 }
 
 .header-sub {
-  font-size: 0.95rem;
-  opacity: 0.8;
-  font-weight: 300;
+  display: none;
 }
 
 /* ========================================
    KARTLAR
    ======================================== */
 .card {
-  background: #fff;
-  border-radius: 16px;
+  background: #FFFFFF;
+  border-radius: 12px;
   padding: 28px;
-  margin-bottom: 20px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+  margin-bottom: 16px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.12);
 }
 
 .card-title {
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
-  color: #1a1a2e;
+  color: #1e293b;
   margin-bottom: 20px;
   padding-bottom: 12px;
-  border-bottom: 2px solid #f0f2f5;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 /* ========================================
    FORM ELEMANLARI
    ======================================== */
 .form-card {
-  border-top: 4px solid #0f3460;
+  border-top: 3px solid #2563EB;
 }
 
 .form-group {
@@ -84,9 +81,9 @@ body {
 
 .form-group label {
   display: block;
-  font-size: 0.88rem;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: #555;
+  color: #475569;
   margin-bottom: 7px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -95,18 +92,18 @@ body {
 .form-group input {
   width: 100%;
   padding: 13px 16px;
-  border: 2px solid #e8ecf0;
-  border-radius: 10px;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 8px;
   font-size: 1rem;
-  color: #1a1a2e;
-  background: #f8f9fb;
+  color: #1e293b;
+  background: #f8fafc;
   transition: border-color 0.2s, box-shadow 0.2s;
   outline: none;
 }
 
 .form-group input:focus {
-  border-color: #0f3460;
-  box-shadow: 0 0 0 3px rgba(15, 52, 96, 0.12);
+  border-color: #2563EB;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
   background: #fff;
 }
 
@@ -115,48 +112,48 @@ body {
    ======================================== */
 .btn-primary {
   width: 100%;
-  padding: 15px;
-  background: linear-gradient(135deg, #0f3460, #1a5276);
+  padding: 14px;
+  background: #2563EB;
   color: #fff;
   border: none;
-  border-radius: 12px;
-  font-size: 1.05rem;
+  border-radius: 8px;
+  font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
   margin-top: 8px;
-  letter-spacing: 0.5px;
-  transition: transform 0.15s, box-shadow 0.15s;
-  box-shadow: 0 4px 15px rgba(15, 52, 96, 0.35);
+  letter-spacing: 0.3px;
+  transition: background 0.15s, box-shadow 0.15s;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
 }
 
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(15, 52, 96, 0.45);
+  background: #1D4ED8;
+  box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
 }
 
 .btn-primary:active {
-  transform: translateY(0);
+  background: #1e40af;
+  box-shadow: none;
 }
 
 .btn-pdf {
   width: 100%;
-  padding: 15px;
-  background: linear-gradient(135deg, #c0392b, #e74c3c);
+  padding: 14px;
+  background: #1e293b;
   color: #fff;
-  border: none;
-  border-radius: 12px;
-  font-size: 1.05rem;
+  border: 1.5px solid #334155;
+  border-radius: 8px;
+  font-size: 1rem;
   font-weight: 700;
   cursor: pointer;
   margin-bottom: 30px;
-  letter-spacing: 0.5px;
-  transition: transform 0.15s, box-shadow 0.15s;
-  box-shadow: 0 4px 15px rgba(192, 57, 43, 0.35);
+  letter-spacing: 0.3px;
+  transition: background 0.15s, border-color 0.15s;
 }
 
 .btn-pdf:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(192, 57, 43, 0.45);
+  background: #334155;
+  border-color: #475569;
 }
 
 /* ========================================
@@ -177,7 +174,7 @@ body {
    SONUÇ KARTLARI
    ======================================== */
 .result-card {
-  border-top: 4px solid #2980b9;
+  border-top: 3px solid #2563EB;
 }
 
 .result-grid {
@@ -193,8 +190,8 @@ body {
 }
 
 .result-item {
-  background: #f8f9fb;
-  border-radius: 10px;
+  background: #f8fafc;
+  border-radius: 8px;
   padding: 14px;
   display: flex;
   flex-direction: column;
@@ -202,42 +199,42 @@ body {
 }
 
 .result-label {
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 600;
-  color: #777;
+  color: #64748b;
   text-transform: uppercase;
   letter-spacing: 0.4px;
 }
 
 .result-value {
-  font-size: 1rem;
+  font-size: 0.97rem;
   font-weight: 700;
-  color: #1a1a2e;
+  color: #1e293b;
 }
 
 /* ========================================
    BİLGİ KARTI (tavan açıklaması)
    ======================================== */
 .info-card {
-  background: #eaf4fb;
-  border: 1px solid #aed6f1;
-  border-left: 5px solid #2980b9;
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-left: 4px solid #2563EB;
   display: flex;
   align-items: flex-start;
   gap: 14px;
-  padding: 18px 22px;
+  padding: 16px 20px;
 }
 
 .info-icon {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   flex-shrink: 0;
   margin-top: 2px;
 }
 
 .info-card p {
-  font-size: 0.93rem;
-  color: #1a5276;
-  line-height: 1.6;
+  font-size: 0.9rem;
+  color: #1e40af;
+  line-height: 1.65;
   font-weight: 500;
 }
 
@@ -273,33 +270,34 @@ body {
 }
 
 .kidem-card {
-  border-top: 4px solid #27ae60;
+  border-top: 3px solid #22C55E;
 }
 
 .ihbar-card {
-  border-top: 4px solid #e67e22;
+  border-top: 3px solid #f59e0b;
 }
 
 .buyuk-tutar {
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: 800;
   margin: 10px 0 14px;
 }
 
 .kidem-card .buyuk-tutar {
-  color: #27ae60;
+  color: #16a34a;
 }
 
 .ihbar-card .buyuk-tutar {
-  color: #e67e22;
+  color: #d97706;
 }
 
 .sonuc-cumle {
-  font-size: 0.92rem;
-  color: #555;
-  line-height: 1.6;
-  background: #f8f9fb;
-  border-radius: 10px;
+  font-size: 0.9rem;
+  color: #475569;
+  line-height: 1.7;
+  background: #f8fafc;
+  border-radius: 8px;
   padding: 12px 16px;
   text-align: left;
+  border: 1px solid #e2e8f0;
 }

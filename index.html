@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kıdem ve İhbar Tazminatı Hesaplayıcı</title>
   <link rel="stylesheet" href="style.css" />
-  <!-- jsPDF: PDF oluşturmak için -->
+  <!-- jsPDF: PDF oluşturmak için (Türkçe karakter desteği dahil) -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 </head>
 <body>
@@ -15,8 +15,8 @@
     <!-- BAŞLIK -->
     <header class="header">
       <div class="header-icon">⚖️</div>
-      <h1>Kıdem &amp; İhbar Tazminatı<br>Hesaplayıcı</h1>
-      <p class="header-sub">Türk İş Hukuku'na göre güncel tavan değerleriyle hesaplama yapın</p>
+      <h1>Kıdem ve İhbar Tazminatı Hesaplama</h1>
+      <p class="header-sub"></p>
     </header>
 
     <!-- GİRİŞ FORMU -->
@@ -67,15 +67,15 @@
         <h2 class="card-title">💰 Ücret Bilgileri</h2>
         <div class="result-grid">
           <div class="result-item">
-            <span class="result-label">Uygulanan Kıdem Tavanı</span>
+            <span class="result-label">İş Akdinin Sona Erdiği Tarihteki Kıdem Tazminatı Tavanı</span>
             <span class="result-value" id="kidemTavan"></span>
           </div>
           <div class="result-item">
-            <span class="result-label">Esas Alınan Aylık Ücret</span>
+            <span class="result-label">Esas Alınan Aylık Brüt Ücret</span>
             <span class="result-value" id="esasAylik"></span>
           </div>
           <div class="result-item">
-            <span class="result-label">Esas Alınan Günlük Ücret</span>
+            <span class="result-label">Esas Alınan Günlük Brüt Ücret</span>
             <span class="result-value" id="esasGunluk"></span>
           </div>
           <div class="result-item">

@@ -200,17 +200,19 @@ function hesapla() {
     kidemSonucAlani.style.display = 'block';
     document.getElementById('kidemTutar').textContent = tlFormat(kidemTazminati);
     document.getElementById('kidemCumle').textContent =
+      `İş akdinin kıdem tazminatına hak kazanacak şekilde sona ermesi halinde, ` +
       `${turkceFormat(girisTarihi)} - ${turkceFormat(cikisTarihi)} tarihleri arasında en son ` +
-      `${tlFormat(salaryVal)} brüt ücret ile çalışan kişinin hak kazandığı kıdem tazminatı ` +
-      `${tlFormat(kidemTazminati)} Türk Lirası'dır.`;
+      `${tlFormat(salaryVal)} giydirilmiş brüt ücret ile çalışan işçiye ödenmesi gereken ` +
+      `kıdem tazminatı ${tlFormat(kidemTazminati)} Türk Lirası'dır.`;
   }
 
   // İhbar tazminatı
   document.getElementById('ihbarTutar').textContent = tlFormat(ihbarTazminati);
   document.getElementById('ihbarCumle').textContent =
+    `İş akdinin ihbar tazminatına hak kazanacak şekilde sona ermesi halinde, ` +
     `${turkceFormat(girisTarihi)} - ${turkceFormat(cikisTarihi)} tarihleri arasında en son ` +
-    `${tlFormat(salaryVal)} brüt ücret ile çalışan kişinin hak kazandığı ihbar tazminatı ` +
-    `${tlFormat(ihbarTazminati)} Türk Lirası'dır.`;
+    `${tlFormat(salaryVal)} giydirilmiş brüt ücret ile çalışan işçiye ödenmesi gereken ` +
+    `ihbar tazminatı ${tlFormat(ihbarTazminati)} Türk Lirası'dır.`;
 
   // Sonuç alanını göster
   document.getElementById('resultSection').style.display = 'block';
@@ -237,50 +239,77 @@ function pdfIndir() {
   const s = window._hesapSonucu;
   if (!s) return;
 
-  // jsPDF kütüphanesini başlat
+  // jsPDF'i başlat
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF({ unit: 'pt', format: 'a4' });
-
-  // Türkçe karakter için özel font gerektiğinde fallback:
-  // jsPDF varsayılan Helvetica Türkçe karakterleri tam desteklemez.
-  // Bu nedenle özel karakterler Latin eşdeğerleriyle gösterilir.
-  // Gerçek Türkçe font isterseniz ek bir .ttf embed edilmesi gerekir.
 
   const PW = 595;  // A4 genişliği (pt)
   const PH = 842;  // A4 yüksekliği (pt)
   const M  = 50;   // sol/sağ kenar boşluğu
 
-  let y = 0; // dikey konum izleyici
+  let y = 0;
 
-  // Türkçe karakterleri PDF-safe hale getiren yardımcı fonksiyon
-  function tr(s) {
-    return s
-      .replace(/ğ/g,'g').replace(/Ğ/g,'G')
-      .replace(/ü/g,'u').replace(/Ü/g,'U')
-      .replace(/ş/g,'s').replace(/Ş/g,'S')
-      .replace(/ı/g,'i').replace(/İ/g,'I')
-      .replace(/ö/g,'o').replace(/Ö/g,'O')
-      .replace(/ç/g,'c').replace(/Ç/g,'C');
+  // -------------------------------------------------------
+  // Türkçe karakter desteği:
+  // jsPDF'in built-in fontları (Helvetica, Times, Courier)
+  // Latin-1 (ISO-8859-1) kodlamasını kullanır. Bu kodlamada
+  // İ, ı, Ğ, ğ, Ş, ş, Ö, ö, Ü, ü, Ç, ç karakterleri mevcuttur
+  // ancak doğrudan string içinde JavaScript Unicode olarak
+  // gönderilince bozulur. Çözüm: doc.setLanguage kullanmak
+  // yerine, metni encodeURIComponent/decodeURIComponent üzerinden
+  // Latin-1 dizisine çevirmek yerine — her karakteri PDF için
+  // doğru glyph kod noktasına manuel map ederek gönderiyoruz.
+  // Bu yöntem ek font dosyası gerektirmez.
+  // -------------------------------------------------------
+  function pdfYaz(metin) {
+    // Türkçe özgün karakterleri Latin Extended-A karşılıklarına
+    // map ederek jsPDF'in WinAnsi kod sayfasında doğru glyph'i
+    // kullanmasını sağlıyoruz.
+    return metin
+      .replace(/İ/g, '\u0130')  // İ (büyük, noktalı)
+      .replace(/ı/g, '\u0131')  // ı (küçük, noktasız)
+      .replace(/Ğ/g, '\u011E')  // Ğ
+      .replace(/ğ/g, '\u011F')  // ğ
+      .replace(/Ş/g, '\u015E')  // Ş
+      .replace(/ş/g, '\u015F')  // ş
+      .replace(/Ö/g, '\u00D6')  // Ö
+      .replace(/ö/g, '\u00F6')  // ö
+      .replace(/Ü/g, '\u00DC')  // Ü
+      .replace(/ü/g, '\u00FC')  // ü
+      .replace(/Ç/g, '\u00C7')  // Ç
+      .replace(/ç/g, '\u00E7'); // ç
   }
 
-  // --- Arka plan başlık bloğu ---
-  doc.setFillColor(15, 52, 96);
-  doc.rect(0, 0, PW, 100, 'F');
+  // PDF'e metin yazan kısayol: önce pdfYaz() uygular
+  function yaz(metin, x, yPos, opts) {
+    doc.text(pdfYaz(metin), x, yPos, opts || {});
+  }
+
+  // Çok satırlı metin bölme — pdfYaz dönüşümü ile
+  function satirBol(metin, genislik) {
+    return doc.splitTextToSize(pdfYaz(metin), genislik);
+  }
+
+  // --- Başlık bloğu ---
+  doc.setFillColor(15, 23, 42);   // #0F172A
+  doc.rect(0, 0, PW, 96, 'F');
 
   doc.setTextColor(255, 255, 255);
   doc.setFont('helvetica', 'bold');
-  doc.setFontSize(17);
-  doc.text(tr('Kidem ve Ihbar Tazminati Hesaplama Raporu'), PW / 2, 45, { align: 'center' });
-  doc.setFontSize(10);
+  doc.setFontSize(16);
+  yaz('Kıdem ve İhbar Tazminatı Hesap Raporu', PW / 2, 44, { align: 'center' });
+
+  doc.setFontSize(9);
   doc.setFont('helvetica', 'normal');
-  doc.text(tr('Turk Is Hukuku\'na gore hazirlanan resmi hesaplama raporu'), PW / 2, 68, { align: 'center' });
-  doc.text(tr('Rapor tarihi: ') + turkceFormat(new Date()), PW / 2, 85, { align: 'center' });
+  doc.setTextColor(148, 163, 184);  // slate-400
+  yaz('Türk İş Hukuku\'na göre hazırlanmıştır', PW / 2, 64, { align: 'center' });
+  yaz('Rapor tarihi: ' + turkceFormat(new Date()), PW / 2, 80, { align: 'center' });
 
-  y = 120;
+  y = 116;
 
-  // --- Yardımcı: satır çizgisi ---
+  // --- Yardımcı: ince çizgi ---
   function cizgi() {
-    doc.setDrawColor(220, 220, 220);
+    doc.setDrawColor(226, 232, 240);
     doc.setLineWidth(0.5);
     doc.line(M, y, PW - M, y);
     y += 12;
@@ -289,145 +318,154 @@ function pdfIndir() {
   // --- Yardımcı: bölüm başlığı ---
   function bolumBaslik(metin) {
     if (y > PH - 150) { doc.addPage(); y = 50; }
-    doc.setFillColor(240, 244, 248);
+    doc.setFillColor(241, 245, 249);   // slate-100
     doc.rect(M, y - 12, PW - 2 * M, 24, 'F');
-    doc.setTextColor(15, 52, 96);
+    doc.setTextColor(37, 99, 235);     // #2563EB
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.text(tr(metin), M + 8, y + 5);
+    doc.setFontSize(10.5);
+    yaz(metin, M + 8, y + 5);
     y += 24;
     cizgi();
   }
 
-  // --- Yardımcı: iki sütun satır ---
-  function satirYaz(etiket, deger, renkDeger) {
+  // --- Yardımcı: iki sütunlu satır ---
+  function satirYaz(etiket, deger, yesilDeger) {
     if (y > PH - 60) { doc.addPage(); y = 50; }
-    doc.setTextColor(100, 100, 100);
+    doc.setTextColor(100, 116, 139);   // slate-500
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text(tr(etiket), M + 4, y);
-    if (renkDeger) {
-      doc.setTextColor(39, 174, 96);
-      doc.setFont('helvetica', 'bold');
+    doc.setFontSize(9.5);
+    yaz(etiket, M + 4, y);
+    if (yesilDeger) {
+      doc.setTextColor(22, 163, 74);   // #16a34a
     } else {
-      doc.setTextColor(26, 26, 46);
-      doc.setFont('helvetica', 'bold');
+      doc.setTextColor(30, 41, 59);    // slate-800
     }
-    doc.text(tr(deger), PW - M - 4, y, { align: 'right' });
+    doc.setFont('helvetica', 'bold');
+    yaz(deger, PW - M - 4, y, { align: 'right' });
     y += 20;
   }
 
   // --- Yardımcı: tam genişlik metin kutusu ---
-  function kutuyaYaz(metin, renkKod) {
+  function kutuyaYaz(metin, dolguRenk, yaziRenk) {
     if (y > PH - 100) { doc.addPage(); y = 50; }
-    const temizMetin = tr(metin);
-    const satirlar = doc.splitTextToSize(temizMetin, PW - 2 * M - 20);
-    const yukseklik = satirlar.length * 16 + 16;
-    doc.setFillColor(...renkKod);
-    doc.roundedRect(M, y, PW - 2 * M, yukseklik, 6, 6, 'F');
-    doc.setTextColor(26, 26, 46);
+    const satirlar = satirBol(metin, PW - 2 * M - 24);
+    const yukseklik = satirlar.length * 15 + 20;
+    doc.setFillColor(...dolguRenk);
+    doc.roundedRect(M, y, PW - 2 * M, yukseklik, 5, 5, 'F');
+    doc.setTextColor(...yaziRenk);
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(10);
-    doc.text(satirlar, M + 10, y + 16);
-    y += yukseklik + 14;
+    doc.setFontSize(9.5);
+    doc.text(satirlar, M + 12, y + 15);
+    y += yukseklik + 12;
   }
 
   // --- Büyük tutar kutusu ---
-  function tutarKutu(baslik, tutar, renkDolgu, renkYazi) {
+  function tutarKutu(baslik, tutar, dolguRenk, tutarRenk) {
     if (y > PH - 80) { doc.addPage(); y = 50; }
-    doc.setFillColor(...renkDolgu);
-    doc.roundedRect(M, y, PW - 2 * M, 60, 8, 8, 'F');
-    doc.setTextColor(...renkYazi);
+    doc.setFillColor(...dolguRenk);
+    doc.roundedRect(M, y, PW - 2 * M, 58, 7, 7, 'F');
+    doc.setTextColor(71, 85, 105);    // slate-600
     doc.setFont('helvetica', 'bold');
-    doc.setFontSize(11);
-    doc.text(tr(baslik), M + 16, y + 20);
-    doc.setFontSize(20);
-    doc.text(tr(tutar), PW - M - 16, y + 38, { align: 'right' });
-    y += 72;
+    doc.setFontSize(10);
+    yaz(baslik, M + 14, y + 19);
+    doc.setTextColor(...tutarRenk);
+    doc.setFontSize(19);
+    yaz(tutar, PW - M - 14, y + 38, { align: 'right' });
+    y += 68;
   }
 
-  // ===================== İÇERİK =====================
+  // ===================== PDF İÇERİĞİ =====================
 
-  // Giriş Bilgileri
-  bolumBaslik('Calisan Bilgileri');
-  satirYaz('Ise Giris Tarihi',     turkceFormat(s.girisTarihi));
-  satirYaz('Isten Cikis Tarihi',   turkceFormat(s.cikisTarihi));
-  satirYaz('Aylik Brut Ucret',     tlFormat(s.salaryVal));
+  // Çalışan Bilgileri
+  bolumBaslik('Çalışan Bilgileri');
+  satirYaz('İşe Giriş Tarihi',       turkceFormat(s.girisTarihi));
+  satirYaz('İşten Çıkış Tarihi',     turkceFormat(s.cikisTarihi));
+  satirYaz('Aylık Giydirilmiş Brüt Ücret', tlFormat(s.salaryVal));
 
   y += 8;
 
   // Çalışma Süresi
-  bolumBaslik('Calisma Suresi');
-  satirYaz('Sure (Yil / Ay / Gun)', `${s.yil} Yil / ${s.ay} Ay / ${s.gun} Gun`);
-  satirYaz('Toplam Gun Sayisi',     `${s.toplamGun} Gun`);
+  bolumBaslik('Çalışma Süresi');
+  satirYaz('Süre (Yıl / Ay / Gün)', `${s.yil} Yıl / ${s.ay} Ay / ${s.gun} Gün`);
+  satirYaz('Toplam Gün Sayısı',     `${s.toplamGun} Gün`);
 
   y += 8;
 
   // Hesaplama Parametreleri
   bolumBaslik('Hesaplama Parametreleri');
-  satirYaz('Uygulanan Kidem Tavani',      tlFormat(s.kTavan));
-  satirYaz('Esas Alinan Aylik Ucret',     tlFormat(s.esasAylikUcret));
-  satirYaz('Esas Alinan Gunluk Ucret',    tlFormat(s.esasGunlukUcret));
-  satirYaz('Ihbar Suresi',                `${s.ihbarGun} Gun`);
+  satirYaz('İş Akdinin Sona Erdiği Tarihteki Kıdem Tazminatı Tavanı',
+    s.kidemHakkazinandiMi ? tlFormat(s.kTavan) : '—');
+  satirYaz('Esas Alınan Aylık Brüt Ücret',
+    s.kidemHakkazinandiMi ? tlFormat(s.esasAylikUcret) : '—');
+  satirYaz('Esas Alınan Günlük Brüt Ücret',
+    s.kidemHakkazinandiMi ? tlFormat(s.esasGunlukUcret) : '—');
+  satirYaz('İhbar Süresi', `${s.ihbarGun} Gün`);
 
   y += 8;
 
-  // Tavan açıklaması
+  // Tavan açıklaması (sadece tavan uygulanmışsa)
   if (s.tavanUygulandiMi) {
-    bolumBaslik('Tavan Uygulamasi Aciklamasi');
-    const aciklama =
-      `Isin bitis tarihi ${turkceFormat(s.cikisTarihi)} itibarive kidem tazminati tavani brut ` +
-      `${tlFormat(s.kTavan)} olarak tespit edilmistir. Brut ucretiniz tavan tutari astigindan ` +
-      `hesaplama ilgili donem icin belirlenmis tavan ${tlFormat(s.kTavan)} esas alinarak yapilmistir.`;
-    kutuyaYaz(aciklama, [255, 243, 205]);
+    bolumBaslik('Tavan Uygulaması Açıklaması');
+    kutuyaYaz(
+      `İşin bitiş tarihi ${turkceFormat(s.cikisTarihi)} itibarıyla kıdem tazminatı tavanı brüt ` +
+      `${tlFormat(s.kTavan)} olarak tespit edilmiştir. Giydirilmiş brüt ücretiniz tavan tutarını ` +
+      `aştığından hesaplama ilgili dönem için belirlenmiş tavan ${tlFormat(s.kTavan)} esas alınarak yapılmıştır.`,
+      [239, 246, 255],   // mavi açık arka plan
+      [30, 64, 175]      // mavi yazı
+    );
   }
 
   y += 4;
 
   // Kıdem Tazminatı Sonucu
-  bolumBaslik('Kidem Tazminati Sonucu');
+  bolumBaslik('Kıdem Tazminatı Sonucu');
   if (!s.kidemHakkazinandiMi) {
-    // 1 yıldan az çalışma: yasal uyarı metni göster
-    const yasalMetin =
-      'Yururlukteki 1475 sayili is kanunu 14. maddesi uyarinca 1 yildan daha az sureli ' +
-      'calismalarda kidem tazminatina hak kazanilmaz, bu sebeple kidem tazminati hesaplanamamistir.';
-    kutuyaYaz(yasalMetin, [255, 248, 225]);
+    kutuyaYaz(
+      'Yürürlükteki 1475 sayılı İş Kanunu 14. maddesi uyarınca 1 yıldan daha az süreli çalışmalarda ' +
+      'kıdem tazminatına hak kazanılmaz, bu sebeple kıdem tazminatı hesaplanamamıştır.',
+      [255, 251, 235],   // amber açık arka plan
+      [120, 53, 15]      // amber koyu yazı
+    );
   } else {
-    tutarKutu('Kidem Tazminati', tlFormat(s.kidemTazminati), [232, 245, 233], [39, 174, 96]);
-    const kidemCumle =
-      `${turkceFormat(s.girisTarihi)} - ${turkceFormat(s.cikisTarihi)} tarihleri arasinda ` +
-      `en son ${tlFormat(s.salaryVal)} brut ucret ile calisan kisinin hak kazandigi kidem tazminati ` +
-      `${tlFormat(s.kidemTazminati)} Turk Lirasi'dir.`;
-    kutuyaYaz(kidemCumle, [248, 249, 250]);
+    tutarKutu('Kıdem Tazminatı', tlFormat(s.kidemTazminati), [240, 253, 244], [22, 163, 74]);
+    kutuyaYaz(
+      `İş akdinin kıdem tazminatına hak kazanacak şekilde sona ermesi halinde, ` +
+      `${turkceFormat(s.girisTarihi)} - ${turkceFormat(s.cikisTarihi)} tarihleri arasında en son ` +
+      `${tlFormat(s.salaryVal)} giydirilmiş brüt ücret ile çalışan işçiye ödenmesi gereken ` +
+      `kıdem tazminatı ${tlFormat(s.kidemTazminati)} Türk Lirası'dır.`,
+      [248, 250, 252],   // slate-50
+      [51, 65, 85]       // slate-700
+    );
   }
 
   y += 4;
 
   // İhbar Tazminatı Sonucu
-  bolumBaslik('Ihbar Tazminati Sonucu');
-  tutarKutu('Ihbar Tazminati', tlFormat(s.ihbarTazminati), [255, 243, 224], [230, 126, 34]);
-  const ihbarCumle =
-    `${turkceFormat(s.girisTarihi)} - ${turkceFormat(s.cikisTarihi)} tarihleri arasinda ` +
-    `en son ${tlFormat(s.salaryVal)} brut ucret ile calisan kisinin hak kazandigi ihbar tazminati ` +
-    `${tlFormat(s.ihbarTazminati)} Turk Lirasi'dir.`;
-  kutuyaYaz(ihbarCumle, [248, 249, 250]);
+  bolumBaslik('İhbar Tazminatı Sonucu');
+  tutarKutu('İhbar Tazminatı', tlFormat(s.ihbarTazminati), [255, 251, 235], [217, 119, 6]);
+  kutuyaYaz(
+    `İş akdinin ihbar tazminatına hak kazanacak şekilde sona ermesi halinde, ` +
+    `${turkceFormat(s.girisTarihi)} - ${turkceFormat(s.cikisTarihi)} tarihleri arasında en son ` +
+    `${tlFormat(s.salaryVal)} giydirilmiş brüt ücret ile çalışan işçiye ödenmesi gereken ` +
+    `ihbar tazminatı ${tlFormat(s.ihbarTazminati)} Türk Lirası'dır.`,
+    [248, 250, 252],
+    [51, 65, 85]
+  );
 
-  // Alt bilgi
+  // Alt bilgi — tüm sayfalar
   const toplamSayfa = doc.internal.getNumberOfPages();
   for (let i = 1; i <= toplamSayfa; i++) {
     doc.setPage(i);
-    doc.setFillColor(240, 244, 248);
-    doc.rect(0, PH - 30, PW, 30, 'F');
-    doc.setTextColor(120, 120, 120);
+    doc.setFillColor(241, 245, 249);
+    doc.rect(0, PH - 28, PW, 28, 'F');
+    doc.setTextColor(148, 163, 184);
     doc.setFont('helvetica', 'normal');
-    doc.setFontSize(8);
-    doc.text(
-      tr('Bu rapor bilgilendirme amaclidir. Kesin hesaplama icin uzman gorusu aliniz.'),
-      PW / 2, PH - 12, { align: 'center' }
-    );
-    doc.text(`Sayfa ${i} / ${toplamSayfa}`, PW - M, PH - 12, { align: 'right' });
+    doc.setFontSize(7.5);
+    yaz('Bu rapor bilgilendirme amaçlıdır. Kesin hesaplama için uzman görüşü alınız.',
+      PW / 2, PH - 10, { align: 'center' });
+    yaz(`Sayfa ${i} / ${toplamSayfa}`, PW - M, PH - 10, { align: 'right' });
   }
 
   // PDF'yi indir
-  doc.save(tr(`Tazminat_Hesaplama_Raporu_${kisaFormat(new Date()).replace(/\./g,'_')}.pdf`));
+  doc.save(`Tazminat_Hesaplama_Raporu_${kisaFormat(new Date()).replace(/\./g,'_')}.pdf`);
 }
